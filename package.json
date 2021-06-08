@@ -1,0 +1,26 @@
+{
+  "name": "lucky-draw-raffle-system",
+  "version": "1.0.0",
+  "description": "lucky draw raffle ticket system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arjun9426/lucky-draw-raffle-system.git"
+  },
+  "author": "Arjun Tomar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Arjun9426/lucky-draw-raffle-system/issues"
+  },
+  "homepage": "https://github.com/Arjun9426/lucky-draw-raffle-system#readme",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "mysql2": "^2.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.1"
+  }
+}
