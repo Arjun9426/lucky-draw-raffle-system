@@ -38,6 +38,18 @@ export default class EventQuery {
   }
 
   // return upcoming event
+  public async getRelation(eventId: any, userId: any): Promise<number> {
+    const getEventQuery = {
+      query: `SELECT rel_type FROM ${this.eventUserRelationshipTableName} 
+      where event_id = ? and user_id = ?`,
+      values: [eventId, userId],
+    };
+    return EventQuery.dbService.executeQuery(
+      MysqlUtil.getSqlFormatQuery(getEventQuery),
+      QueryType.SELECT
+    );
+  }
+  // return upcoming event
   public async getNextEvent(): Promise<number> {
     // Getting created user from DB
     const eventFields = [
@@ -61,7 +73,7 @@ export default class EventQuery {
   }
 
   // return  event with eventId
-  public async getEvent(eventId: SVGAnimatedNumber): Promise<number> {
+  public async getEvent(eventId: number): Promise<number> {
     // Getting created user from DB
     const eventFields = [
       'event_id',
@@ -97,10 +109,10 @@ export default class EventQuery {
     );
   }
 
-  public async getWinnersByEvents(eventIds: number[]): Promise<any> {
+  public async getEventUsers(eventId: number): Promise<any> {
     const getEventQuery = {
-      query: `SELECT winner_user_id FROM ${this.eventTableName} where event_id in (?) `,
-      values: [eventIds],
+      query: `SELECT user_id FROM ${this.eventUserRelationshipTableName} where event_id = ? `,
+      values: [eventId],
     };
     return EventQuery.dbService.executeQuery(
       MysqlUtil.getSqlFormatQuery(getEventQuery),

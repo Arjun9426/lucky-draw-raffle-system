@@ -4,7 +4,9 @@
   "description": "lucky draw raffle ticket system",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/.bin/tsc -p .",
+    "start": " ts-node src/app.ts"
   },
   "repository": {
     "type": "git",
@@ -17,7 +19,9 @@
   },
   "homepage": "https://github.com/Arjun9426/lucky-draw-raffle-system#readme",
   "dependencies": {
+    "@types/express": "^4.17.12",
     "dotenv": "^10.0.0",
+    "express": "^4.17.1",
     "mysql2": "^2.2.5"
   },
   "devDependencies": {
