@@ -19,6 +19,10 @@ class DatabaseService {
   private pool: Query;
 
   private constructor() {
+    console.log(12);
+    console.log(Config.getDBConfig());
+    console.log(12);
+
     const poolObj: Pool = mysql.createPool(Config.getDBConfig());
     this.pool = new Query(poolObj);
   }
@@ -29,6 +33,7 @@ class DatabaseService {
       console.log('[DB] Query Result: %s', JSON.stringify(result));
       return result;
     } catch (err) {
+      console.log(err);
       throw new DBError('[DB] ', err);
     }
   }

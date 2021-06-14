@@ -16,7 +16,9 @@ const CONFIG = {
 
 class Config {
   static getDBConfig(): any {
-    return CONFIG.db;
+    const abc: any = CONFIG.db;
+    console.log(abc);
+    return abc;
   }
 }
 

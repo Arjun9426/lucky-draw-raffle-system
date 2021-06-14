@@ -1,15 +1,17 @@
+import { EventMapper } from '../common/mappers/EventMapper';
 import ServiceError from '../common/errors/ServiceError';
 import EventFactory from '../factory/EventFactory';
 class EventService {
   static async createEvent(request: any): Promise<any> {
+    // this check can be made more better
     if (
       request.startTime &&
       request.endTime &&
-      Date.now() < request.startTime < request.endTime
+      Date.now() < request.startTime &&
+      request.startTime < request.endTime
     ) {
-      const response: any = await EventFactory.getInstance().createEvent(
-        request
-      );
+      const dbObj: any = EventMapper.getCreateEventDbObj(request);
+      const response: any = await EventFactory.getInstance().createEvent(dbObj);
       return response;
     } else {
       throw ServiceError.getError(
@@ -20,8 +22,8 @@ class EventService {
   }
 
   static async joinEvent(request: any): Promise<any> {
-    const eventId: any = request.body.eventId;
-    const userId: any = request.body.userId;
+    const eventId: any = (request && request.eventId) || 0;
+    const userId: any = (request && request.userId) || 0;
     if (!eventId || !userId) {
       throw ServiceError.getError(
         'INVALID_PARAMS',
@@ -36,23 +38,35 @@ class EventService {
         'events does not exists'
       );
     }
-    if (events && events[0] && events[0].end_time < Date.now()) {
-      // event does not exists
+    if (
+      events &&
+      events[0] &&
+      new Date(events[0].end_time).getTime() < Date.now()
+    ) {
+      // event is completed
       throw ServiceError.getError(
         'EVENT_IS_COMPLETED',
         'user can join an ongoing event only'
       );
     }
 
+    // event is live or upcoming
     const results: any = await EventFactory.getInstance().getRelation(
       eventId,
       userId
     );
     if (results.length !== 0) {
+      // already registered.. this check will make this api idempotent
       return { message: 'registered' };
     }
-    await EventFactory.getInstance().joinEvent(request);
-    return { message: 'registered' };
+    const relationId: number = await EventFactory.getInstance().joinEvent(
+      request
+    );
+    if (relationId) return { message: 'registered' };
+    else {
+      // unable to join event because of some unnow reason
+      throw ServiceError.getInternalServerError();
+    }
   }
 
   static async getNextEvent(): Promise<any> {

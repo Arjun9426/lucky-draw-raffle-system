@@ -14,8 +14,9 @@ export default class EventQuery {
   }
 
   public async createEvent(eventObj: any): Promise<number> {
+    console.log(eventObj);
     const query: any = {
-      query: `insert into ${this.eventTableName} set ?`,
+      query: `insert into ${this.eventTableName}  set ?`,
       values: eventObj,
     };
 

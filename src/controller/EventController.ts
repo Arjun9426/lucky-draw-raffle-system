@@ -1,10 +1,12 @@
+import ResponseUtil from '../common/utils/ResponseUtil';
 import EventService from '../Service/EventService';
 
 class EventController {
   static async createEvent(request: any, res: any, next: any): Promise<void> {
     try {
       const response: any = await EventService.createEvent(request.body);
-      res.send(response);
+      console.log(response);
+      ResponseUtil.sendSuccessResponse(res, response);
     } catch (e) {
       return next(e);
     }
@@ -12,6 +14,7 @@ class EventController {
 
   static async joinEvent(request: any, res: any, next: any): Promise<void> {
     try {
+      console.log(request.body);
       const response: any = await EventService.joinEvent(request.body);
       res.send(response);
     } catch (e) {
