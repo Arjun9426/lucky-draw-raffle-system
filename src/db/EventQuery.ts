@@ -50,6 +50,7 @@ export default class EventQuery {
       QueryType.SELECT
     );
   }
+
   // return upcoming event
   public async getNextEvent(): Promise<number> {
     // Getting created user from DB
@@ -62,10 +63,10 @@ export default class EventQuery {
       'winner_user_id',
       'joining_fee',
     ].map((value) => `${this.eventTableName}.${value}`);
-    const currentTime: number = Date.now();
+    const currentTime: number = Math.floor(Date.now() / 1000); // getting time in seconds
     const getEventQuery = {
       query: `SELECT ${eventFields} FROM ${this.eventTableName} where unix_timestamp(${this.eventTableName}.start_time) > ${currentTime}
-       order by ${this.eventTableName}.start_time desc limit 0,1`,
+       order by ${this.eventTableName}.start_time asc limit 0,1`,
     };
     return EventQuery.dbService.executeQuery(
       MysqlUtil.getSqlFormatQuery(getEventQuery),
@@ -121,13 +122,15 @@ export default class EventQuery {
     );
   }
 
-  // winner of last week events who have completed in last one week
-  public async getLastWeekWinners(): Promise<any> {
-    const currentTime: number = Date.now() / 1000;
-    const lastWeekTime: number = Date.now() / 1000 - 7 * 24 * 60 * 60;
+  // winner of events who have completed in last one week
+  public async getLastWeekEvents(): Promise<any> {
+    const currentTime: number = Math.floor(Date.now() / 1000);
+    const lastWeekTime: number = Math.floor(
+      Date.now() / 1000 - 7 * 24 * 60 * 60
+    );
 
     const getEventQuery = {
-      query: `SELECT winner_user_id FROM ${this.eventTableName} where unix_timestamp(${this.eventTableName}.end_time) < ${currentTime} 
+      query: `SELECT event_id FROM ${this.eventTableName} where unix_timestamp(${this.eventTableName}.end_time) < ${currentTime} 
       and  unix_timestamp(${this.eventTableName}.end_time) > ${lastWeekTime} `,
     };
     return EventQuery.dbService.executeQuery(

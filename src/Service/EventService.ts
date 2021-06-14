@@ -16,7 +16,7 @@ class EventService {
     } else {
       throw ServiceError.getError(
         'INVALID_PARAMS',
-        'time properties are not valid'
+        'Time properties are not valid'
       );
     }
   }
@@ -27,7 +27,7 @@ class EventService {
     if (!eventId || !userId) {
       throw ServiceError.getError(
         'INVALID_PARAMS',
-        'eventId and userId are not valid'
+        'EventId and userId are not valid'
       );
     }
     const events: any = await EventFactory.getInstance().getEvent(eventId);
@@ -35,7 +35,7 @@ class EventService {
       // event does not exists
       throw ServiceError.getError(
         'EVENT_DOES_NOT_EXISTS',
-        'events does not exists'
+        'Events does not exists'
       );
     }
     if (
@@ -46,7 +46,7 @@ class EventService {
       // event is completed
       throw ServiceError.getError(
         'EVENT_IS_COMPLETED',
-        'user can join an ongoing event only'
+        'User can join an ongoing event only'
       );
     }
 
@@ -59,8 +59,9 @@ class EventService {
       // already registered.. this check will make this api idempotent
       return { message: 'registered' };
     }
+    const joinEventDbObj: any = EventMapper.getJoinEventDbObj(request);
     const relationId: number = await EventFactory.getInstance().joinEvent(
-      request
+      joinEventDbObj
     );
     if (relationId) return { message: 'registered' };
     else {
@@ -80,12 +81,13 @@ class EventService {
       // event does not exists
       throw ServiceError.getError(
         'EVENT_DOES_NOT_EXISTS',
-        'events does not exists'
+        'Events does not exists'
       );
     }
-    if (results[0].end_time < Date.now()) {
-      // not ended
-      throw ServiceError.getError('EVENT_NOT_COMPLETED', 'event not completed');
+    if (results[0] && new Date(results[0].end_time).getTime() > Date.now()) {
+      // not completed so far
+      console.log(new Date(results[0].end_time).getTime(), Date.now());
+      throw ServiceError.getError('EVENT_NOT_COMPLETED', 'Event not completed');
     }
     if (results && results[0] && results[0]['winner_user_id']) {
       // winner already calculated
@@ -95,19 +97,57 @@ class EventService {
     if (!users || !users.length) {
       throw ServiceError.getError(
         'EVENT_DO_NOT_HAVE_USERS',
-        'event do not have any users'
+        'Event do not have any users'
       );
     }
     // calculating winner randomly
-    const winnerUser: any = users[Math.floor(Math.random() * users.length)];
+    const winnerUser: any =
+      users[Math.floor(Math.random() * users.length)]['user_id'];
     // setting winner
     EventFactory.getInstance().setEventWinner(eventId, winnerUser);
     return winnerUser;
   }
 
+  // TODO -- check if event's winner is calculated if yes push that to list else calculate it
   static async getLastWeekWinners(): Promise<void> {
-    const response: any = await EventFactory.getInstance().getLastWeekWinners();
-    return response;
+    const events: any = await EventFactory.getInstance().getLastWeekEvents();
+    if (!events || !events.length) {
+      throw ServiceError.getError(
+        'NO_EVENT_LAST_WEEK',
+        'No events completed in last week'
+      );
+    }
+    const usersPromises: any = [];
+    // Getting users for all events
+    for (let index = 0; index < events.length; index++) {
+      const eventId = (events[index] && events[index]['event_id']) || 0;
+      if (eventId)
+        usersPromises.push(EventFactory.getInstance().getEventUsers(eventId));
+    }
+    const users: any = await Promise.all(usersPromises);
+
+    const winners: any = [];
+    const setWinnersPromises: any = [];
+    for (let index = 0; users && index < users.length; index++) {
+      if (!users[index] || !users[index].length) {
+        // this event has ended but have no users
+        winners.push(-1);
+        continue;
+      }
+      // calculating winner randomly
+      const winnerUser: any =
+        users[Math.floor(Math.random() * users.length)]['user_id'];
+      // setting winner
+      const eventId = (events[index] && events[index]['event_id']) || 0;
+      if (eventId)
+        setWinnersPromises.push(
+          EventFactory.getInstance().setEventWinner(eventId, winnerUser)
+        );
+      winners.push(winnerUser);
+    }
+    await Promise.all(setWinnersPromises);
+
+    return winners;
   }
 }
 

@@ -16,7 +16,8 @@ class EventController {
     try {
       console.log(request.body);
       const response: any = await EventService.joinEvent(request.body);
-      res.send(response);
+
+      ResponseUtil.sendSuccessResponse(res, response);
     } catch (e) {
       return next(e);
     }
@@ -25,7 +26,8 @@ class EventController {
   static async getNextEvent(request: any, res: any, next: any): Promise<void> {
     try {
       const response: any = await EventService.getNextEvent();
-      res.send(response);
+
+      ResponseUtil.sendSuccessResponse(res, response);
     } catch (e) {
       return next(e);
     }
@@ -38,8 +40,9 @@ class EventController {
   ): Promise<void> {
     const eventId: any = request.params.eventId || 0;
     try {
-      const response: any = await EventService.createEvent(eventId);
-      res.send(response);
+      const response: any = await EventService.getWinner(eventId);
+
+      ResponseUtil.sendSuccessResponse(res, response);
     } catch (e) {
       return next(e);
     }
@@ -52,7 +55,8 @@ class EventController {
   ): Promise<void> {
     try {
       const response: any = await EventService.getLastWeekWinners();
-      res.send(response);
+
+      ResponseUtil.sendSuccessResponse(res, response);
     } catch (e) {
       return next(e);
     }

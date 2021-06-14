@@ -21,4 +21,17 @@ export class EventMapper {
     console.log(dbObj);
     return dbObj;
   }
+
+  public static getJoinEventDbObj(obj: any): any {
+    const dbObj: any = {};
+
+    if (obj.eventId) dbObj['event_id'] = obj.eventId;
+
+    if (obj.userId) dbObj['user_id'] = obj.userId;
+
+    // As of now only one rel_type
+    if (obj.userId) dbObj['rel_type'] = 1;
+
+    return dbObj;
+  }
 }
