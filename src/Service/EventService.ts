@@ -46,7 +46,7 @@ class EventService {
       // event is completed
       throw ServiceError.getError(
         'EVENT_IS_COMPLETED',
-        'User can join an ongoing event only'
+        'User can join an upcoming or ongoing event only'
       );
     }
 
@@ -121,9 +121,19 @@ class EventService {
     // Getting users for all events
     for (let index = 0; index < events.length; index++) {
       const eventId = (events[index] && events[index]['event_id']) || 0;
-      if (eventId)
+      const winnerUserId =
+        (events[index] && events[index]['winner_user_id']) || 0;
+      if (eventId && !winnerUserId)
         usersPromises.push(EventFactory.getInstance().getEventUsers(eventId));
+      // pushing winnerUserId just to maintain order of events
+      else if (eventId && winnerUserId) usersPromises.push([winnerUserId]);
+      else {
+        // Throwing internal server error in this case... this will make sure size of events array and users array will be same
+        // and each index is consistent
+        throw ServiceError.getInternalServerError();
+      }
     }
+
     const users: any = await Promise.all(usersPromises);
 
     const winners: any = [];
@@ -134,9 +144,19 @@ class EventService {
         winners.push(-1);
         continue;
       }
+      // checking if winner was already calculated
+      const winnerUserId =
+        (events[index] && events[index]['winner_user_id']) || 0;
+      if (winnerUserId) {
+        winners.push(winnerUserId);
+        continue;
+      }
       // calculating winner randomly
       const winnerUser: any =
-        users[Math.floor(Math.random() * users.length)]['user_id'];
+        users[index][Math.floor(Math.random() * users[index].length)][
+          'user_id'
+        ];
+
       // setting winner
       const eventId = (events[index] && events[index]['event_id']) || 0;
       if (eventId)

@@ -130,7 +130,7 @@ export default class EventQuery {
     );
 
     const getEventQuery = {
-      query: `SELECT event_id FROM ${this.eventTableName} where unix_timestamp(${this.eventTableName}.end_time) < ${currentTime} 
+      query: `SELECT event_id, winner_user_id FROM ${this.eventTableName} where unix_timestamp(${this.eventTableName}.end_time) < ${currentTime} 
       and  unix_timestamp(${this.eventTableName}.end_time) > ${lastWeekTime} `,
     };
     return EventQuery.dbService.executeQuery(

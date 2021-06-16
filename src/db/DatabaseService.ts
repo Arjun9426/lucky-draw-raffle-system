@@ -19,10 +19,6 @@ class DatabaseService {
   private pool: Query;
 
   private constructor() {
-    console.log(12);
-    console.log(Config.getDBConfig());
-    console.log(12);
-
     const poolObj: Pool = mysql.createPool(Config.getDBConfig());
     this.pool = new Query(poolObj);
   }
